@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interfacer Jira pour produire des rapports PRINCE2 — APF France handicap</title>
+  <meta name="description" content="Formation certifiante RF7138 – Automatiser le reporting projet PRINCE2 avec Jira, SharePoint et Copilot. APF France handicap Formation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CHARTE APF FRANCE HANDICAP ─── */
+    :root {
+      --teal:        #1A6078;
+      --teal-dark:   #134D61;
+      --teal-light:  #E8F3F7;
+      --orange:      #F5A623;
+      --orange-dark: #D4891A;
+      --cream:       #FAF6F0;
+      --cream-mid:   #F0EAE0;
+      --white:       #FFFFFF;
+      --text:        #1A2B35;
+      --text-light:  #4A6070;
+      --border:      #D8E8EF;
+      --shadow:      rgba(26,96,120,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--white);
+    }
+
+    /* ─── SKIP LINK (accessibilité) ─── */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 1rem;
+      background: var(--orange);
+      color: var(--white);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-weight: 700;
+      z-index: 9999;
+      transition: top 0.2s;
+    }
+    .skip-link:focus { top: 1rem; }
+
+    /* ─── HEADER / HERO ─── */
+    header {
+      background: var(--teal);
+      color: var(--white);
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header-topbar {
+      background: var(--teal-dark);
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-topbar img.logo {
+      height: 52px;
+      width: auto;
+    }
+
+    .header-topbar .badge {
+      background: var(--orange);
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.3rem 0.9rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      padding: 4rem 2rem 5rem;
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 18px;
+      background: var(--orange);
+      border-radius: 2px;
+    }
+
+    h1 {
+      font-family: 'Bitter', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 1.2rem;
+      color: var(--white);
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--orange);
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.82);
+      max-width: 640px;
+      margin-bottom: 2rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .meta-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 30px;
+      padding: 0.45rem 1rem;
+      font-size: 0.88rem;
+      color: var(--white);
+      backdrop-filter: blur(4px);
+    }
+
+    .meta-pill svg {
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    /* Decorative wave */
+    .header-wave {
+      display: block;
+      width: 100%;
+      height: 60px;
+      margin-top: -1px;
+    }
+
+    /* ─── NAVIGATION STICKY ─── */
+    nav.sticky {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 3px solid var(--teal);
+      box-shadow: 0 2px 12px var(--shadow);
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .nav-inner a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.9rem 1.2rem;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .nav-inner a:hover, .nav-inner a:focus {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+      outline: none;
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      padding: 4rem 2rem;
+    }
+
+    .section-inner {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .section-inner.wide {
+      max-width: 1100px;
+    }
+
+    h2 {
+      font-family: 'Bitter', serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.4em;
+      background: var(--orange);
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .section-subtitle {
+      color: var(--text-light);
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+      padding-left: 0.9rem;
+    }
+
+    /* ─── OBJECTIFS CARDS ─── */
+    .objectifs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .objectif-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 4px solid var(--teal);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .objectif-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+
+    .objectif-card .icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .objectif-card h3 {
+      font-family: 'Bitter', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 0.4rem;
+    }
+
+    .objectif-card p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    /* ─── PUBLIC & PRÉREQUIS ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    .info-box {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .info-box h3 {
+      font-family: 'Bitter', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .info-box ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .info-box ul li::before {
+      content: '›';
+      color: var(--orange);
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      flex-shrink: 0;
+    }
+
+    /* ─── PROGRAMME ACCORDÉON ─── */
+    section.programme { background: var(--cream); }
+
+    .phase-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.75rem;
+      border-radius: 20px;
+      margin-bottom: 0.75rem;
+    }
+
+    .phase-avant { background: #E8F3F7; color: var(--teal); }
+    .phase-pendant { background: #FFF4E0; color: var(--orange-dark); }
+    .phase-apres { background: #E6F7EF; color: #2A7A52; }
+
+    details {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    details[open] {
+      box-shadow: 0 4px 16px var(--shadow);
+      border-color: var(--teal);
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 1.1rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--teal-dark);
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary:hover { background: var(--teal-light); }
+
+    summary::after {
+      content: '+';
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--orange);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+      margin-left: 1rem;
+    }
+
+    details[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .detail-body {
+      padding: 0 1.4rem 1.4rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-body ul {
+      margin-top: 0.75rem;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .detail-body ul li {
+      padding-left: 1.2rem;
+      position: relative;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .detail-body ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--orange);
+      font-size: 0.8rem;
+      top: 0.15em;
+    }
+
+    .atelier-tag {
+      display: inline-block;
+      background: var(--orange);
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-top: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-body p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    /* ─── DISPOSITIF PÉDAGOGIQUE ─── */
+    .dispositif-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .dispositif-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .dispositif-item .d-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .dispositif-item p {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    /* ─── ÉVALUATION ─── */
+    .eval-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .eval-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+
+    .eval-num {
+      background: var(--teal);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 700;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── VIDÉO ─── */
+    section.video { background: var(--teal-dark); color: var(--white); }
+
+    section.video h2 { color: var(--white); }
+    section.video h2::before { background: var(--orange); }
+    section.video .section-subtitle { color: rgba(255,255,255,0.7); }
+
+    .video-placeholder {
+      background: rgba(255,255,255,0.08);
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+    }
+
+    .video-placeholder svg {
+      opacity: 0.4;
+      margin-bottom: 1rem;
+    }
+
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* ─── TÉLÉCHARGEMENTS ─── */
+    .dl-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .dl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .dl-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .dl-btn.primary {
+      background: var(--teal);
+      color: var(--white);
+      border: 2px solid var(--teal);
+    }
+
+    .dl-btn.primary:hover { background: var(--teal-dark); }
+
+    .dl-btn.secondary {
+      background: var(--white);
+      color: var(--teal);
+      border: 2px solid var(--teal);
+    }
+
+    .dl-btn.secondary:hover { background: var(--teal-light); }
+
+    /* ─── CARTE ─── */
+    .map-container {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px var(--shadow);
+    }
+
+    .map-container iframe {
+      display: block;
+      width: 100%;
+      height: 380px;
+      border: 0;
+    }
+
+    .map-address {
+      background: var(--cream);
+      padding: 1rem 1.5rem;
+      font-size: 0.92rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ─── QUALIOPI ─── */
+    .qualiopi-band {
+      background: var(--teal-light);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+
+    .qualiopi-band .q-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .qualiopi-band p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    .qualiopi-band strong {
+      color: var(--teal);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--teal-dark);
+      color: var(--white);
+      padding: 3rem 2rem 2rem;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .footer-inner { grid-template-columns: 1fr; }
+    }
+
+    .footer-col h4 {
+      font-family: 'Bitter', serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--orange);
+      margin-bottom: 1rem;
+    }
+
+    .footer-col p, .footer-col a {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      line-height: 1.8;
+    }
+
+    .footer-col a:hover { color: var(--orange); text-decoration: underline; }
+
+    .footer-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      margin: 2rem auto;
+      max-width: 1100px;
+    }
+
+    .footer-bottom {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .footer-logo {
+      height: 36px;
+      width: auto;
+      opacity: 0.8;
+      filter: brightness(0) invert(1);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      .hero { padding: 2.5rem 1.25rem 3rem; }
+      section { padding: 3rem 1.25rem; }
+      .header-topbar { padding: 0.6rem 1.25rem; }
+      .nav-inner { padding: 0 0.5rem; }
+      .nav-inner a { padding: 0.9rem 0.75rem; font-size: 0.82rem; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @media (prefers-reduced-motion: no-preference) {
+      .objectif-card, .eval-item, details {
+        animation: fadeUp 0.4s ease both;
+      }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Focus visible */
+    :focus-visible {
+      outline: 3px solid var(--orange);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<a href="#programme" class="skip-link">Aller au contenu principal</a>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════ -->
+<header>
+  <div class="header-topbar">
+    <img src="logo.png" alt="APF France handicap – Risquer l'impossible" class="logo" />
+    <span class="badge">Certification RF7138</span>
+  </div>
+
+  <div class="hero">
+    <span class="hero-eyebrow">Formation professionnelle · Fondamental · Opérationnel</span>
+    <h1>Interfacer <em>Jira</em> pour produire des rapports <em>PRINCE2</em></h1>
+    <p class="hero-sub">
+      Automatisez votre reporting projet avec Jira, SharePoint et Copilot Enterprise. 
+      Réduisez les ressaisies, fiabilisez vos données, communiquez en 30 secondes chrono.
+    </p>
+    <div class="hero-meta">
+      <span class="meta-pill">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Dates à confirmer
+      </span>
+      <span class="meta-pill">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        1 journée (répartie sur 2 jours)
+      </span>
+      <span class="meta-pill">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Présentiel ou classe à distance
+      </span>
+    </div>
+  </div>
+
+  <svg class="header-wave" viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#ffffff"/>
+  </svg>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════════ -->
+<nav class="sticky" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="#objectifs">Objectifs</a>
+    <a href="#public">Public &amp; Prérequis</a>
+    <a href="#programme">Programme</a>
+    <a href="#pedagogie">Pédagogie</a>
+    <a href="#video">Formateur</a>
+    <a href="#inscription">Inscription</a>
+    <a href="#documents">Documents</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     OBJECTIFS
+═══════════════════════════════════════════════ -->
+<section id="objectifs">
+  <div class="section-inner">
+    <h2>Objectifs de la formation</h2>
+    <p class="section-subtitle">Ce que vous saurez faire à l'issue de la session</p>
+
+    <div class="objectifs-grid">
+      <div class="objectif-card">
+        <span class="icon" aria-hidden="true">🗄️</span>
+        <h3>Centraliser les données</h3>
+        <p>Fiabiliser le reporting en consolidant les sources Jira, Teams et Outlook dans SharePoint.</p>
+      </div>
+      <div class="objectif-card">
+        <span class="icon" aria-hidden="true">⚙️</span>
+        <h3>Automatiser les livrables</h3>
+        <p>Produire automatiquement les livrables PRINCE2 sans ressaisie manuelle.</p>
+      </div>
+      <div class="objectif-card">
+        <span class="icon" aria-hidden="true">🤖</span>
+        <h3>Exploiter Copilot IA</h3>
+        <p>Synthétiser les états projet et adapter la communication aux parties prenantes.</p>
+      </div>
+      <div class="objectif-card">
+        <span class="icon" aria-hidden="true">⏱️</span>
+        <h3>Gagner du temps</h3>
+        <p>Réduire drastiquement le temps consacré au reporting et sécuriser la cohérence des informations.</p>
+      </div>
+      <div class="objectif-card">
+        <span class="icon" aria-hidden="true">📋</span>
+        <h3>Concevoir un POC</h3>
+        <p>Livrer un Proof of Concept logique défendable, actif phare de la certification RF7138.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     PUBLIC & PRÉREQUIS
+═══════════════════════════════════════════════ -->
+<section id="public" style="background:var(--cream)">
+  <div class="section-inner">
+    <h2>À qui s'adresse cette formation ?</h2>
+    <p class="section-subtitle">Public ciblé et conditions d'accès</p>
+
+    <div class="two-col">
+      <div class="info-box">
+        <h3><span aria-hidden="true">👥</span> Public cible</h3>
+        <ul>
+          <li>Chefs de Projet SI</li>
+          <li>Chefs de Projet transverses</li>
+          <li>PMO souhaitant automatiser et fiabiliser leur reporting projet</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h3><span aria-hidden="true">✅</span> Prérequis</h3>
+        <ul>
+          <li>Connaissances de base en gestion de projet</li>
+          <li>Utilisation courante de Jira</li>
+          <li>Accès à l'environnement Microsoft (Teams, SharePoint, Copilot)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     PROGRAMME
+═══════════════════════════════════════════════ -->
+<section id="programme" class="programme">
+  <div class="section-inner">
+    <h2>Programme détaillé</h2>
+    <p class="section-subtitle">Formation structurée en 3 phases : avant, pendant et après la session</p>
+
+    <!-- AVANT -->
+    <span class="phase-label phase-avant">📤 Avant la formation</span>
+
+    <details>
+      <summary>Activités préparatoires à distance</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Questionnaire de positionnement</li>
+          <li>Auto-diagnostic des pratiques de reporting projet</li>
+          <li>Cartographie personnelle des outils et sources de données</li>
+          <li>Vidéo d'introduction : <em>«&nbsp;Pourquoi automatiser le reporting projet PRINCE2&nbsp;?&nbsp;»</em></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- PENDANT -->
+    <span class="phase-label phase-pendant" style="margin-top:1.5rem;display:inline-block;">⚡ Pendant la formation</span>
+
+    <details open>
+      <summary>Introduction – Cadre, enjeux et fil rouge</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Comprendre les enjeux du reporting PRINCE2</li>
+          <li>Présentation du POC fil rouge : construire une chaîne simple de reporting automatisé à partir de Jira, centralisée dans SharePoint</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Module 1 — Centraliser les données projet</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Identifier les sources de données projet (Jira, Teams, Outlook, Excel)</li>
+          <li>Comprendre le rôle de SharePoint comme point de centralisation</li>
+          <li>Structurer un espace SharePoint adapté aux livrables PRINCE2</li>
+        </ul>
+        <span class="atelier-tag">🔧 Atelier POC – Étape 1</span>
+        <p>Conception d'une arborescence SharePoint projet</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Module 2 — Automatiser les livrables PRINCE2</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Identifier les livrables PRINCE2 automatisables</li>
+          <li>Cartographier les flux de données Jira → SharePoint → reporting</li>
+          <li>Concevoir une chaîne simple d'automatisation du reporting</li>
+        </ul>
+        <span class="atelier-tag">🔧 Atelier POC – Étape 2</span>
+        <p>Description d'un flux d'automatisation d'un livrable PRINCE2</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Module 3 — Exploiter l'IA (Copilot) pour la communication</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Comprendre le rôle réel de l'IA dans le reporting</li>
+          <li>Utiliser Copilot pour synthétiser un état projet, reformuler un message, adapter la communication aux parties prenantes</li>
+          <li>Adapter un même contenu à différents publics (Sponsor, Comité, Équipe)</li>
+        </ul>
+        <span class="atelier-tag">🔧 Atelier POC – Étape 3</span>
+        <p>Production de deux versions d'un même message projet</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Conclusion — Capitalisation et questions</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Synthèse des apprentissages</li>
+          <li>Mise en cohérence du POC</li>
+          <li>Questions / Réponses</li>
+          <li>Projection en situation de travail réelle</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- APRÈS -->
+    <span class="phase-label phase-apres" style="margin-top:1.5rem;display:inline-block;">🎯 Après la formation</span>
+
+    <details>
+      <summary>Mise en œuvre en situation de travail</summary>
+      <div class="detail-body">
+        <ul>
+          <li>Finalisation du POC sur le contexte réel du participant</li>
+          <li>Dépôt des livrables sur la webapp de suivi</li>
+          <li>Auto-évaluation des compétences acquises</li>
+          <li>Élaboration d'un plan d'actions individuel</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     DISPOSITIF PÉDAGOGIQUE
+═══════════════════════════════════════════════ -->
+<section id="pedagogie">
+  <div class="section-inner">
+    <h2>Dispositif pédagogique</h2>
+    <p class="section-subtitle">Une pédagogie active orientée compétences et accessibilité</p>
+
+    <div class="dispositif-grid">
+      <div class="dispositif-item">
+        <div class="d-icon">🎓</div>
+        <p>Apports structurés alternés avec ateliers guidés</p>
+      </div>
+      <div class="dispositif-item">
+        <div class="d-icon">💼</div>
+        <p>Études de cas et mises en situation professionnelles</p>
+      </div>
+      <div class="dispositif-item">
+        <div class="d-icon">🔗</div>
+        <p>POC fil rouge tout au long de la formation</p>
+      </div>
+      <div class="dispositif-item">
+        <div class="d-icon">♿</div>
+        <p>Supports accessibles et inclusifs (DYS, malvoyance, PMR)</p>
+      </div>
+      <div class="dispositif-item">
+        <div class="d-icon">🚀</div>
+        <p>Transposition immédiate en situation de travail</p>
+      </div>
+    </div>
+
+    <!-- Évaluation -->
+    <h2 style="margin-top:3rem;">Évaluation des acquis</h2>
+    <p class="section-subtitle">4 modalités complémentaires</p>
+    <div class="eval-list">
+      <div class="eval-item">
+        <div class="eval-num">1</div>
+        <div>Validation du POC fil rouge (Proof of Concept)</div>
+      </div>
+      <div class="eval-item">
+        <div class="eval-num">2</div>
+        <div>Auto-évaluation commentée des compétences</div>
+      </div>
+      <div class="eval-item">
+        <div class="eval-num">3</div>
+        <div>Justification des choix d'automatisation effectués</div>
+      </div>
+      <div class="eval-item">
+        <div class="eval-num">4</div>
+        <div>Plan d'actions opérationnel à 15 jours</div>
+      </div>
+    </div>
+
+    <div class="qualiopi-band" role="note" aria-label="Certification Qualiopi">
+      <span class="q-icon" aria-hidden="true">🏅</span>
+      <p>
+        <strong>Formation certifiée Qualiopi</strong><br/>
+        Conçue selon les exigences du référentiel Qualiopi. Approche orientée compétences, opérationnalité et accessibilité universelle.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     VIDÉO FORMATEUR
+═══════════════════════════════════════════════ -->
+<section id="video" class="video">
+  <div class="section-inner">
+    <h2>Mot du formateur</h2>
+    <p class="section-subtitle">Découvrez la vision pédagogique de cette formation</p>
+
+    <!-- Remplacer ce bloc par : <div class="video-wrapper"><iframe src="https://www.youtube.com/embed/VOTRE_ID" allowfullscreen title="Présentation de la formation par le formateur"></iframe></div> -->
+    <div class="video-placeholder" role="img" aria-label="Vidéo de présentation — lien à venir">
+      <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
+      </svg>
+      <p style="margin-top:0.5rem;font-size:1rem;color:rgba(255,255,255,0.6);">
+        La vidéo de présentation du formateur sera disponible prochainement.<br/>
+        <em>Remplacez ce bloc par l'iframe YouTube une fois l'URL disponible.</em>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     INSCRIPTION
+═══════════════════════════════════════════════ -->
+<section id="inscription" style="background:var(--cream)">
+  <div class="section-inner">
+    <h2>S'inscrire à la formation</h2>
+    <p class="section-subtitle">Remplissez le formulaire ci-dessous — votre client mail s'ouvrira avec un message pré-rempli</p>
+
+    <div class="inscription-card">
+      <div class="inscription-fields">
+
+        <div class="field-group">
+          <label for="insc-nom">Nom complet <span aria-hidden="true" class="required">*</span></label>
+          <input type="text" id="insc-nom" name="nom" placeholder="ex. Marie Dupont" autocomplete="name" required />
+        </div>
+
+        <div class="field-group">
+          <label for="insc-email">Adresse e-mail <span aria-hidden="true" class="required">*</span></label>
+          <input type="email" id="insc-email" name="email" placeholder="ex. marie.dupont@entreprise.fr" autocomplete="email" required />
+        </div>
+
+        <div class="field-group">
+          <label for="insc-entreprise">Entreprise / Organisation <span style="color:var(--text-light);font-weight:400;">(optionnel)</span></label>
+          <input type="text" id="insc-entreprise" name="entreprise" placeholder="ex. Société Générale" autocomplete="organization" />
+        </div>
+
+        <div id="insc-error" class="insc-error" role="alert" aria-live="polite" hidden></div>
+
+        <button type="button" id="insc-btn" class="dl-btn primary insc-submit" onclick="envoyerInscription()">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          Envoyer ma demande d'inscription
+        </button>
+
+        <p class="insc-mention">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Votre client de messagerie s'ouvrira avec un message pré-rempli à destination de <strong>theo.joly@afp.asso.fr</strong>. Envoyez-le pour finaliser votre demande.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .inscription-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 4px 20px var(--shadow);
+    max-width: 560px;
+  }
+
+  .inscription-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .field-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--teal-dark);
+  }
+
+  .required { color: var(--orange); }
+
+  .field-group input {
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.97rem;
+    color: var(--text);
+    background: var(--cream);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .field-group input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(26,96,120,0.15);
+    background: var(--white);
+  }
+
+  .field-group input:invalid:not(:placeholder-shown) {
+    border-color: #d94040;
+  }
+
+  .insc-submit {
+    width: 100%;
+    justify-content: center;
+    font-size: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    margin-top: 0.25rem;
+  }
+
+  .insc-error {
+    background: #fdecea;
+    border: 1px solid #f5c6c6;
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.88rem;
+    color: #b82020;
+  }
+
+  .insc-mention {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  .insc-mention svg { flex-shrink: 0; margin-top: 0.15rem; }
+
+  @media (max-width: 600px) {
+    .inscription-card { padding: 1.5rem 1.25rem; }
+  }
+</style>
+
+<script>
+  function envoyerInscription() {
+    const nom       = document.getElementById('insc-nom').value.trim();
+    const email     = document.getElementById('insc-email').value.trim();
+    const entreprise = document.getElementById('insc-entreprise').value.trim();
+    const erreur    = document.getElementById('insc-error');
+
+    // Validation
+    if (!nom || !email) {
+      erreur.textContent = 'Merci de renseigner votre nom et votre adresse e-mail.';
+      erreur.hidden = false;
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      erreur.textContent = 'L\'adresse e-mail semble incorrecte. Vérifiez le format.';
+      erreur.hidden = false;
+      return;
+    }
+    erreur.hidden = true;
+
+    const sujet = encodeURIComponent('Demande d\'inscription – Formation Jira / PRINCE2 (RF7138)');
+    const corps = encodeURIComponent(
+      'Bonjour,\n\n' +
+      'Je souhaite m\'inscrire à la formation « Interfacer Jira pour produire des rapports PRINCE2 ».\n\n' +
+      'Mes coordonnées :\n' +
+      '  • Nom       : ' + nom + '\n' +
+      '  • E-mail    : ' + email + '\n' +
+      (entreprise ? '  • Organisme : ' + entreprise + '\n' : '') +
+      '\nMerci de me confirmer ma place et de m\'envoyer les informations pratiques.\n\n' +
+      'Cordialement,\n' + nom
+    );
+
+    window.location.href = 'mailto:theo.joly@afp.asso.fr?subject=' + sujet + '&body=' + corps;
+  }
+
+  // Permettre la soumission via Entrée
+  ['insc-nom','insc-email','insc-entreprise'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') envoyerInscription();
+    });
+  });
+</script>
+
+<!-- ═══════════════════════════════════════════════
+     TÉLÉCHARGEMENTS
+═══════════════════════════════════════════════ -->
+<section id="documents">
+  <div class="section-inner">
+    <h2>Documents à télécharger</h2>
+    <p class="section-subtitle">Tous les documents utiles à votre formation</p>
+
+    <div class="dl-grid">
+      <a href="programme.pdf" class="dl-btn primary" download aria-label="Télécharger le programme de formation (PDF)">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Programme de formation (PDF)
+      </a>
+      <a href="livret-stagiaire.pdf" class="dl-btn secondary" download aria-label="Télécharger le livret du stagiaire (PDF)">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Livret du stagiaire (PDF)
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<footer role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>Contact formateur</h4>
+      <p>
+        Théo Joly<br/>
+        <a href="mailto:theo.joly@afp.asso.fr">theo.joly@afp.asso.fr</a>
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>APF France handicap</h4>
+      <p>
+        <a href="https://www.apf-francehandicap.org" target="_blank" rel="noopener noreferrer">apf-francehandicap.org</a><br/>
+        <a href="https://www.apf-francehandicap.org/politique-inclusion-handicap" target="_blank" rel="noopener noreferrer">Politique inclusion &amp; référent handicap</a>
+      </p>
+      <p style="margin-top:0.75rem;font-size:0.82rem;opacity:0.6;">
+        ⚠️ Mettez à jour les liens ci-dessus avec les URLs exactes de votre OF.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>La formation</h4>
+      <p>
+        Certification RF7138<br/>
+        Durée : 1 journée (2 demi-journées)<br/>
+        Modalité : Présentiel / Distanciel
+      </p>
+    </div>
+  </div>
+
+  <hr class="footer-divider" />
+
+  <div class="footer-bottom">
+    <img src="logo.png" alt="APF France handicap" class="footer-logo" />
+    <span>© 2025 APF France handicap Formation — Organisme certifié Qualiopi</span>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     BOUTON RETOUR EN HAUT
+═══════════════════════════════════════════════ -->
+<a href="#" id="back-to-top" aria-label="Retour en haut de page" title="Retour en haut">
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+  </svg>
+</a>
+
+<style>
+  #back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 200;
+    background: var(--teal);
+    color: var(--white);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s, transform 0.3s, background 0.2s;
+    pointer-events: none;
+  }
+  #back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  #back-to-top:hover { background: var(--orange); }
+  #back-to-top:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+  }
+</style>
+
+<script>
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+</script>
+
+</body>
+</html>
